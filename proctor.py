@@ -13,12 +13,19 @@ class ProctorServer:
         
         return server_socket
 
-
     # i think i might need different proctor socket for each tester socket?
     def listen_for_tester(self): 
-        for i in range(10): 
-            returned = self.tester_sockets[0].recv(1024)
-            print(returned)
+        while True: 
+            try: 
+                from_testers = [socket.recv(1024) for socket in self.tester_sockets]
+                returns = [returned.decode("ascii") for returned in from_testers if len(returned)]
+
+                if len(returns):
+                    print(returns)
+            # or some other mechanism to signal the end
+            except KeyboardInterrupt: 
+                self.close_connection()
+                break
 
     def send_messages(self, message):
         for socket in self.tester_sockets:
@@ -30,13 +37,17 @@ class ProctorServer:
 
 def main():
     tester_servers = [
+        "localhost",
+        "localhost",
+        "localhost",
+        "localhost",
         "localhost"
     ]
-    ports = [49001]
+    ports = [49001, 49002, 49003, 49004, 49005]
     server = ProctorServer(tester_servers, ports)
     server.send_messages("begin test")
     server.listen_for_tester()
 
-    server.close_connection()
+#    server.close_connection()
 
 main()

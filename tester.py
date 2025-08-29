@@ -1,5 +1,6 @@
 import sys, socket
 from enum import Enum
+import time
 import re
 
 DEFAULT_PORT=48999
@@ -24,8 +25,6 @@ class TesterServer:
 
         while True:
             proctor_socket, proctor_address = self.sock.accept()
-#            print ("Connection received from ",  proctor_socket.getpeername())
-            # Get the message and echo it back
             while True:
                 data = proctor_socket.recv(1024)
                 if not len(data):
@@ -40,8 +39,9 @@ class TesterServer:
 
     def monitor_and_notify(self):
         while self.state == State.MONITOR: 
-            dummy = "bobobo"
+            dummy = f"hello from {self.host}:{self.port}\n"
             try: 
+                time.sleep(1)
                 self.proctor_socket.sendall(dummy.encode("ascii"))
             except ConnectionResetError:
                 self.state = State.WAIT
@@ -62,7 +62,9 @@ def main():
     # Listen forever
     print ("Listening on port " + str(server.port))
     while True:
+        print(server.state)
         server.listen_for_proctor()
+        print(server.state)
         server.monitor_and_notify()
         print("connection closed, ending test state")
 
