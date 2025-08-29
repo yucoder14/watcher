@@ -2,12 +2,32 @@ import sys, socket
 from enum import Enum
 import time
 import re
+import subprocess
 
 DEFAULT_PORT=48999
 
 class State(Enum): 
     WAIT = 0,
     MONITOR = 1
+
+def check_browsers(): 
+    browsers = ["Chrome", "Firefox", "Safari", "Opera"]
+        
+    found_processes = 0
+
+    for browser in browsers:
+        ps_process = subprocess.Popen(["ps", "aux"],stdout=subprocess.PIPE) 
+        grep_browser_process = subprocess.Popen(["grep", f"{browser}.app"], 
+                                                stdin=ps_process.stdout, stdout=subprocess.PIPE)
+        grep_reverse_process_1 = subprocess.Popen(["grep", "-v", "grep"], 
+                                              stdin=grep_browser_process.stdout, stdout=subprocess.PIPE)
+        grep_reverse_process_2 = subprocess.Popen(["grep", "-v", "Extension"], 
+                                                stdin=grep_reverse_process_1.stdout, stdout=subprocess.PIPE)
+        wc_process = subprocess.Popen(["wc", "-l"], stdin=grep_reverse_process_2.stdout, stdout=subprocess.PIPE)
+        output, error = wc_process.communicate()
+        found_processes = found_processes + int(output.decode().strip())
+
+    return found_processes > 0
 
 class TesterServer:
     def __init__(self, port=DEFAULT_PORT):
@@ -29,24 +49,20 @@ class TesterServer:
                 data = proctor_socket.recv(1024)
                 if not len(data):
                     break
-                print ("Received message:  " + data.decode("ascii"))
                 message = data.decode("ascii")
                 if (re.match(r"^begin test$" , message)):
-                    self.state = State.MONITOR
                     self.proctor_socket = proctor_socket 
                     self.proctor_address = proctor_address
+                    self.state = State.MONITOR
                     return
 
     def monitor_and_notify(self):
         while self.state == State.MONITOR: 
-            dummy = f"hello from {self.host}:{self.port}\n"
             try: 
-                time.sleep(1)
-                self.proctor_socket.sendall(dummy.encode("ascii"))
-            except ConnectionResetError:
+                self.proctor_socket.sendall(f"{check_browsers()}".encode("ascii"))
+            except (ConnectionResetError, BrokenPipeError):
                 self.state = State.WAIT
-            except BrokenPipeError: 
-                self.state = State.WAIT
+                self.proctor_socket.close()
 
 def main():
     # Create a server
@@ -60,12 +76,8 @@ def main():
         server = TesterServer()
 
     # Listen forever
-    print ("Listening on port " + str(server.port))
     while True:
-        print(server.state)
         server.listen_for_proctor()
-        print(server.state)
         server.monitor_and_notify()
-        print("connection closed, ending test state")
 
 main()

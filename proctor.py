@@ -14,14 +14,15 @@ class ProctorServer:
         return server_socket
 
     # i think i might need different proctor socket for each tester socket?
-    def listen_for_tester(self): 
+    def lisent_to_testers(self): 
         while True: 
             try: 
                 from_testers = [socket.recv(1024) for socket in self.tester_sockets]
-                returns = [returned.decode("ascii") for returned in from_testers if len(returned)]
+                returns = [True for returned in from_testers if eval(returned.decode("ascii"))]
+                violations = list(map(lambda violation, socket: socket.getsockname()[0] if violation else None, returns, self.tester_sockets))
 
-                if len(returns):
-                    print(returns)
+                if len(violations):
+                    print(violations)
             # or some other mechanism to signal the end
             except KeyboardInterrupt: 
                 self.close_connection()
@@ -43,10 +44,11 @@ def main():
         "localhost",
         "localhost"
     ]
-    ports = [49001, 49002, 49003, 49004, 49005]
+#    ports = [49001]
+    ports = [49000, 49001, 49002, 49003, 49004]
     server = ProctorServer(tester_servers, ports)
     server.send_messages("begin test")
-    server.listen_for_tester()
+    server.lisent_to_testers()
 
 #    server.close_connection()
 
