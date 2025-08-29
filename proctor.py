@@ -1,9 +1,8 @@
 import sys, socket
-import time
+from datetime import datetime
 
 class ProctorServer: 
     def __init__(self, tester_servers, tester_ports):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.tester_sockets = list(map(self.init_connection, tester_servers, tester_ports))
 
     def init_connection(self, server, port):
@@ -13,16 +12,17 @@ class ProctorServer:
         
         return server_socket
 
-    # i think i might need different proctor socket for each tester socket?
     def lisent_to_testers(self): 
         while True: 
             try: 
-                from_testers = [socket.recv(1024) for socket in self.tester_sockets]
-                returns = [True for returned in from_testers if eval(returned.decode("ascii"))]
-                violations = list(map(lambda violation, socket: socket.getsockname()[0] if violation else None, returns, self.tester_sockets))
+                from_testers = [tester_socket.recv(1024) for tester_socket in self.tester_sockets]
+                returns = [returned.decode("ascii") for returned in from_testers]
+                violations = list(map(lambda violation, socket: 
+                                        socket.getsockname()[0] if violation == "True" else None, 
+                                      returns, self.tester_sockets))
 
                 if len(violations):
-                    print(violations)
+                    print(datetime.now(), violations)
             # or some other mechanism to signal the end
             except KeyboardInterrupt: 
                 self.close_connection()
@@ -44,12 +44,10 @@ def main():
         "localhost",
         "localhost"
     ]
-#    ports = [49001]
+
     ports = [49000, 49001, 49002, 49003, 49004]
     server = ProctorServer(tester_servers, ports)
     server.send_messages("begin test")
     server.lisent_to_testers()
-
-#    server.close_connection()
 
 main()
