@@ -1,5 +1,7 @@
 import sys, socket
 from enum import Enum
+import re
+
 DEFAULT_PORT=48999
 
 class State(Enum): 
@@ -9,7 +11,7 @@ class State(Enum):
 class TesterServer:
     def __init__(self, port=DEFAULT_PORT):
         self.port = port
-        self.host = ""
+        self.host = "localhost"
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
@@ -22,23 +24,29 @@ class TesterServer:
 
         while True:
             proctor_socket, proctor_address = self.sock.accept()
-            print ("Connection received from ",  proctor_socket.getpeername())
+#            print ("Connection received from ",  proctor_socket.getpeername())
             # Get the message and echo it back
             while True:
                 data = proctor_socket.recv(1024)
                 if not len(data):
                     break
                 print ("Received message:  " + data.decode("ascii"))
-                if (data.decode("ascii") == "begin test"):
+                message = data.decode("ascii")
+                if (re.match(r"^begin test$" , message)):
                     self.state = State.MONITOR
-                    self.proctor_socket = proctor_socket
+                    self.proctor_socket = proctor_socket 
                     self.proctor_address = proctor_address
                     return
 
-    def monitor(self):
-        dummy = "bobobo"
-        self.proctor_socket.send(dummy.encode("ascii"))
-
+    def monitor_and_notify(self):
+        while self.state == State.MONITOR: 
+            dummy = "bobobo"
+            try: 
+                self.proctor_socket.sendall(dummy.encode("ascii"))
+            except ConnectionResetError:
+                self.state = State.WAIT
+            except BrokenPipeError: 
+                self.state = State.WAIT
 
 def main():
     # Create a server
@@ -53,8 +61,9 @@ def main():
 
     # Listen forever
     print ("Listening on port " + str(server.port))
-    server.listen_for_proctor()
-    print(server.state)
-    server.monitor()
+    while True:
+        server.listen_for_proctor()
+        server.monitor_and_notify()
+        print("connection closed, ending test state")
 
 main()
