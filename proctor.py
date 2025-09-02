@@ -38,16 +38,18 @@ class ProctorServer:
 
 def main():
     tester_servers = [
-        "localhost",
-        "localhost",
-        "localhost",
-        "localhost",
-        "localhost"
+        "olin335-03.mathcs.carleton.edu"
+        #        "localhost",
+        #        "localhost",
+        #        "localhost",
+        #        "localhost"
     ]
 
-    ports = [49000, 49001, 49002, 49003, 49004]
+    ports = [48999]
+#    ports = [49000, 49001, 49002, 49003, 49004]
     server = ProctorServer(tester_servers, ports)
     server.send_messages("begin test")
     server.lisent_to_testers()
 
-main()
+if __name__=="__main__":
+    main()
