@@ -20,6 +20,9 @@ Client-side (proctor machine)
 python3 classroom.py /path/to/classroom.xml
 ```
 
+> [!NOTE]
+> `classroom.py` assumes that your terminal supports colors.
+
 Creating the XML File
 =====================
 
@@ -57,6 +60,10 @@ Once the tables have been mapped out, I further partition the tables into *distr
 *addresses* to get the relative location of the machine on the table. Districts and addresses
 are $y$, $x$ coordinates of the machines relative to the table they reside upon. 
 
+The `hostname` and `port` attributes on the `address` tags will be used to make a socket 
+connection. The `port` number should be the specified port number that was used to run 
+`tester.py` scripts on the test machines.
+
 Look at [`dummy.xml`](dummy.xml): <br>
 <img src="img/dummy_example.png" width=500>
 
@@ -73,14 +80,22 @@ Server States
 Disconnected
 ------------
 
+When the server is not responding, or the specified port is not listening, the disconnected
+state will be represented by a box with white outline and text:
+
 <img src="img/disconnected.png" width=500>
 
 Idle
 ----
 
+When the server is connected, the color of the outline and text will turn green.
+
 <img src="img/idle.png" width=500>
 
 Violation
 ---------
+
+When the connected server opens one of the specified browsers, the color of the outline and 
+text will turn red, and the text will be flashing.
 
 <img src="img/violation.png" width=500>
