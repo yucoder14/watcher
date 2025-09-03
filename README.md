@@ -39,7 +39,33 @@ Here is an example of an xml file with a single local machine:
 ```
 
 The xml file serves to logically represent the physical location of the test machines 
-in the classroom where the exam takes place. 
+in the classroom where the exam takes place. I thought it would be nice if the proctor
+can visually see which machine is opening a browser application without having to memorize
+which machines are located where in the classroom.
+
+The Coordinate System
+---------------------
+
+From the reference point of the instructor station, or where the proctor usually stands 
+during exams, I first divided the classroom into rows, which I call *continents*. I then
+divide continents into columns, which I call *islands*. Islands are a desk or a cluster of 
+desks where the machines are located. Continents and Islands are $y$, $x$ coordinates of 
+the desks with $(0,0)$ located on the far-left corner of the classroom from the proctor's
+perspective.   
+
+Once the tables have been mapped out, I further partition the tables into *districts* and 
+*addresses* to get the relative location of the machine on the table. Districts and addresses
+are $y$, $x$ coordinates of the machines relative to the table they reside upon. 
+
+Look at [`dummy.xml`](dummy.xml): 
+<img src="img/dummy_example.png" width=500>
+
+It is up to the user to however orient the classroom as one wishes. In the example above, 
+I am assuming that the bottom of the terminal is where the instructor station is located.
+
+> [!Note]
+> Sadly, there isn't a nice graphical tool to generate the files. However, `classroom.py` can 
+> be used to visualize the xml file when creating the xml file 
 
 Server States 
 =============
