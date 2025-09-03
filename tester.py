@@ -25,9 +25,9 @@ def check_browsers():
                                                 stdin=grep_reverse_process_1.stdout, stdout=subprocess.PIPE)
         wc_process = subprocess.Popen(["wc", "-l"], stdin=grep_reverse_process_2.stdout, stdout=subprocess.PIPE)
         output, error = wc_process.communicate()
-        found_processes = found_processes + int(output.decode().strip())
+        if (int(output.decode().strip()) > 0): return True
 
-    return found_processes > 0
+    return False
 
 class TesterServer:
     def __init__(self, port=DEFAULT_PORT):

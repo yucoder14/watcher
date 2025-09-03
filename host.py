@@ -43,6 +43,9 @@ class Host:
     def get_hostname(self):
         return self.hostname
 
+    def get_port(self):
+        return self.port
+
     def get_status(self):
         return self.status 
 
@@ -55,3 +58,5 @@ class Host:
         self.height = height  
         self.width = width  
 
+    def set_status(self, status):
+        self.status = status

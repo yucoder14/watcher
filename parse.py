@@ -14,6 +14,7 @@ class Parser:
         root = ET.parse(self.input_file)
         hosts = []
 
+        # ew
         continents = root.findall("continent")
         self.classmap["0"] = len(continents)
         for continent in continents:

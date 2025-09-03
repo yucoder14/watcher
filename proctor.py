@@ -1,9 +1,11 @@
 import sys, socket
 from datetime import datetime
+from host import Host, HostStatus
 
 class ProctorServer: 
-    def __init__(self, tester_servers, tester_ports):
-        self.tester_sockets = list(map(self.init_connection, tester_servers, tester_ports))
+    def __init__(self, hosts):
+        self.tester_sockets = [self.init_connection(host.get_hostname(), host.get_port()) for host in hosts]
+        self.hosts = hosts
 
     def init_connection(self, server, port):
         # create a TCP/IP socket using ipv4
@@ -11,6 +13,16 @@ class ProctorServer:
         server_socket.connect((server, port))
         
         return server_socket
+
+    def query_testers(self): 
+        try: 
+            from_testers = [tester_socket.recv(1024) for tester_socket in self.tester_sockets]
+            replies = [returned.decode("ascii") for returned in from_testers]
+            return replies
+        # or some other mechanism to signal the end
+        except KeyboardInterrupt: 
+            self.close_connection()
+        
 
     def lisent_to_testers(self): 
         while True: 
@@ -35,21 +47,3 @@ class ProctorServer:
     def close_connection(self):
         for socket in self.tester_sockets:
             socket.close()
-
-def main():
-    tester_servers = [
-        "olin335-03.mathcs.carleton.edu"
-        #        "localhost",
-        #        "localhost",
-        #        "localhost",
-        #        "localhost"
-    ]
-
-    ports = [48999]
-#    ports = [49000, 49001, 49002, 49003, 49004]
-    server = ProctorServer(tester_servers, ports)
-    server.send_messages("begin test")
-    server.lisent_to_testers()
-
-if __name__=="__main__":
-    main()

@@ -3,6 +3,7 @@ from parse import Parser
 from host import Host, HostStatus
 from proctor import ProctorServer 
 from functools import partial
+import time
 
 class Classroom: 
     def __init__(self, classroom_xml, stdscr): 
@@ -12,12 +13,16 @@ class Classroom:
         self.stdscr = stdscr
         self.screen_height, self.screen_width = stdscr.getmaxyx()
         self.margin = 1
+        self.proctor = ProctorServer(self.hosts)
 
     def get_hosts(self):
         return self.hosts 
 
     def get_classmap(self):
         return self.classmap
+
+    def begin_test(self):
+        self.proctor.send_messages("begin test")
 
     def determine_dim(self): 
         # determine the height of each host
@@ -61,8 +66,8 @@ class Classroom:
             address = host.get_address()
 
             # calculate y, x position of the hosts
-            continent_y = self.margin + self.margin * continent
-            island_y = sum([max_rows[i] * host_height for i in range(continent)]) 
+            continent_y = self.margin
+            island_y = sum([max_rows[i] * host_height + self.margin for i in range(continent)]) 
             district_y = district * host_height 
             address_y = continent_y + island_y + district_y 
 
@@ -74,11 +79,13 @@ class Classroom:
             host.set_curses_dim(address_y, address_x, host_height, host_widths[continent])
 
     def draw(self): 
+        self.stdscr.clear()
         for host in self.hosts:
             name = host.get_hostname()
             y, x, height, width = host.get_curses_dim()
 
             status_color = curses.color_pair(1) if host.get_status() == HostStatus.OK else curses.color_pair(2)
+            attributes = curses.A_BOLD | curses.color_pair(3) if host.get_status() == HostStatus.OK else curses.A_BOLD | curses.A_BLINK | curses.color_pair(4) 
 
             win = self.stdscr.subwin(height, width, y, x)
 
@@ -86,10 +93,28 @@ class Classroom:
             win.box()
             win.attroff(status_color)
 
-            win.addstr(height // 2, width // 2 - len(name) // 2, name)             
+            win.addstr(height // 2, width // 2 - len(name) // 2, name, attributes)             
+        self.stdscr.refresh()
 
+    def check(self): 
+        with open("log", "a") as file:
+            returns = self.proctor.query_testers()
 
+#            for host in self.hosts: 
+#                host.set_status(HostStatus.BAD)
 
+        for violation, host in zip(returns, self.hosts):
+            if violation.find("True") != -1:
+                host.set_status(HostStatus.BAD)
+            else:
+                host.set_status(HostStatus.OK)
+
+#            map(lambda violation, host: host.set_status(HostStatus.BAD) if violation == "True" else host.status(HostStatus.OK), 
+#                    returns, self.hosts)
+#            file.write(str([host.get_status() for host in self.hosts])+"\n")
+
+        return
+    
 def main(classroom_xml, stdscr):
     curses.curs_set(0)
     stdscr.clear()
@@ -97,13 +122,20 @@ def main(classroom_xml, stdscr):
     curses.start_color();
     curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_GREEN);
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_RED);
+    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK);
+    curses.init_pair(4, curses.COLOR_RED, curses.COLOR_BLACK);
 
     classroom = Classroom(classroom_xml, stdscr)
     classroom.determine_dim()
-    classroom.draw()
+    classroom.begin_test()
+    while True:
+        try: 
+            classroom.check()
+            classroom.draw()
+            time.sleep(0.1)
+        except KeyboardInterrupt:
+            break
 
-    stdscr.getch()
-
-curses.wrapper(partial(main, "olin310.xml"))
+curses.wrapper(partial(main, "localhost.xml"))
 
 
