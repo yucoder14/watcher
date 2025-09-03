@@ -113,7 +113,8 @@ class Classroom:
             win.box()
             win.attroff(status_color)
 
-            win.addstr(height // 2, width // 2 - len(name) // 2, name, attributes)             
+            end = width if (width < len(name)) else len(name)  
+            win.addstr(height // 2, width // 2 - len(name) // 2, name[:end], attributes)             
         self.stdscr.refresh()
 
     def check(self): 

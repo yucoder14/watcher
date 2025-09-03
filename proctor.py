@@ -11,7 +11,7 @@ class ProctorServer:
         # create a TCP/IP socket using ipv4
         try: 
             server_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-            server_socket.settimeout(0.5)
+            server_socket.settimeout(2)
             server_socket.connect((server, port))
         except (ConnectionRefusedError, socket.gaierror, TimeoutError):
             server_socket = None 
