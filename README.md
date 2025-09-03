@@ -52,9 +52,9 @@ Disconnected
 Idle
 ----
 
-<img src="img/idle.png">
+<img src="img/idle.png" width=500>
 
 Violation
 ---------
 
-<img src="img/violation.png">
+<img src="img/violation.png" width=500>
