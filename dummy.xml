@@ -1,0 +1,30 @@
+<classroom id='olin310'> 
+    <continent id='0'>
+        <island id='0'>
+            <district id='0'> 
+                <address id='0' hostname='dummy-01' port='48999'></address>
+                <address id='1' hostname='dummy-02' port='48999'></address>
+            </district> 
+            <district id='1'> 
+                <address id='0' hostname='dummy-03' port='48999'></address>
+                <address id='1' hostname='dummy-04' port='48999'></address>
+            </district> 
+            <district id='2'> 
+                <address id='0' hostname='dummy-05' port='48999'></address>
+            </district> 
+        </island>
+        <island id='1'>
+            <district id='0'> 
+                <address id='0' hostname='dummy-06' port='48999'></address>
+                <address id='1' hostname='dummy-07' port='48999'></address>
+            </district> 
+            <district id='1'> 
+                <address id='0' hostname='dummy-08' port='48999'></address>
+                <address id='1' hostname='dummy-09' port='48999'></address>
+            </district> 
+            <district id='2'> 
+                <address id='0' hostname='dummy-10' port='48999'></address>
+            </district> 
+        </island>
+	</continent>
+</classroom> 
