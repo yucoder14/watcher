@@ -57,7 +57,7 @@ Once the tables have been mapped out, I further partition the tables into *distr
 *addresses* to get the relative location of the machine on the table. Districts and addresses
 are $y$, $x$ coordinates of the machines relative to the table they reside upon. 
 
-Look at [`dummy.xml`](dummy.xml): 
+Look at [`dummy.xml`](dummy.xml): <br>
 <img src="img/dummy_example.png" width=500>
 
 It is up to the user to however orient the classroom as one wishes. In the example above, 
