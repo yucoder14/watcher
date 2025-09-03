@@ -33,6 +33,9 @@ class Classroom:
     def begin_test(self):
         self.proctor.send_messages("begin test")
 
+    def update_screen_dim(self): 
+        self.screen_height, self.screen_width = self.stdscr.getmaxyx()
+
     def determine_dim(self): 
         # determine the height of each host
         total_rows = 0
@@ -138,10 +141,11 @@ def main(classroom_xml, stdscr):
     curses.init_pair(DEAD_TEXT, curses.COLOR_WHITE, curses.COLOR_BLACK);
 
     classroom = Classroom(classroom_xml, stdscr)
-    classroom.determine_dim()
     classroom.begin_test()
     while True:
         try: 
+            classroom.update_screen_dim()
+            classroom.determine_dim()
             classroom.check()
             classroom.draw()
             time.sleep(0.1)
