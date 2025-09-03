@@ -77,7 +77,10 @@ def main():
 
     # Listen forever
     while True:
-        server.listen_for_proctor()
-        server.monitor_and_notify()
+        try: 
+            server.listen_for_proctor()
+            server.monitor_and_notify()
+        except KeyboardInterrupt: 
+            break
 
 main()

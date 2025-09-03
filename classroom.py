@@ -1,9 +1,11 @@
 import curses
+import time
+import argparse
+
 from parse import Parser
 from host import Host, HostStatus
 from proctor import ProctorServer 
 from functools import partial
-import time
 
 OK_BOX = 1
 BAD_BOX = 2
@@ -88,7 +90,7 @@ class Classroom:
     def draw(self): 
         self.stdscr.clear()
         for host in self.hosts:
-            name = host.get_hostname()
+            name = host.get_hostname().split(".")[0]
             y, x, height, width = host.get_curses_dim()
 
             match host.get_status(): 
@@ -130,10 +132,10 @@ def main(classroom_xml, stdscr):
     curses.start_color();
     curses.init_pair(OK_BOX, curses.COLOR_GREEN, curses.COLOR_GREEN);
     curses.init_pair(BAD_BOX, curses.COLOR_RED, curses.COLOR_RED);
-    curses.init_pair(DEAD_BOX, 240, 240);
+    curses.init_pair(DEAD_BOX, curses.COLOR_WHITE, curses.COLOR_WHITE);
     curses.init_pair(OK_TEXT, curses.COLOR_GREEN, curses.COLOR_BLACK);
     curses.init_pair(BAD_TEXT, curses.COLOR_RED, curses.COLOR_BLACK);
-    curses.init_pair(DEAD_TEXT, 240, curses.COLOR_BLACK);
+    curses.init_pair(DEAD_TEXT, curses.COLOR_WHITE, curses.COLOR_BLACK);
 
     classroom = Classroom(classroom_xml, stdscr)
     classroom.determine_dim()
@@ -146,6 +148,9 @@ def main(classroom_xml, stdscr):
         except KeyboardInterrupt:
             break
 
-curses.wrapper(partial(main, "localhost.xml"))
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Monitor classroom")
+    parser.add_argument('filename')
+    args = parser.parse_args()
 
-
+    curses.wrapper(partial(main, args.filename))
