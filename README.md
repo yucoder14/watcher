@@ -47,7 +47,7 @@ Server States
 Disconnected
 ------------
 
-<img src="img/disconnected.png" width=300>
+<img src="img/disconnected.png" width=500>
 
 Idle
 ----
