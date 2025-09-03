@@ -5,6 +5,13 @@ from proctor import ProctorServer
 from functools import partial
 import time
 
+OK_BOX = 1
+BAD_BOX = 2
+DEAD_BOX = 3
+OK_TEXT = 4
+BAD_TEXT = 5
+DEAD_TEXT = 6
+
 class Classroom: 
     def __init__(self, classroom_xml, stdscr): 
         parser = Parser(classroom_xml)
@@ -84,8 +91,16 @@ class Classroom:
             name = host.get_hostname()
             y, x, height, width = host.get_curses_dim()
 
-            status_color = curses.color_pair(1) if host.get_status() == HostStatus.OK else curses.color_pair(2)
-            attributes = curses.A_BOLD | curses.color_pair(3) if host.get_status() == HostStatus.OK else curses.A_BOLD | curses.A_BLINK | curses.color_pair(4) 
+            match host.get_status(): 
+                case HostStatus.OK: 
+                    status_color = curses.color_pair(OK_BOX) 
+                    attributes = curses.A_BOLD | curses.color_pair(OK_TEXT)
+                case HostStatus.BAD: 
+                    status_color = curses.color_pair(BAD_BOX) 
+                    attributes = curses.A_BOLD | curses.A_BLINK | curses.color_pair(BAD_TEXT)
+                case _: 
+                    status_color = curses.color_pair(DEAD_BOX) 
+                    attributes = curses.A_BOLD | curses.color_pair(DEAD_TEXT)
 
             win = self.stdscr.subwin(height, width, y, x)
 
@@ -97,33 +112,28 @@ class Classroom:
         self.stdscr.refresh()
 
     def check(self): 
-        with open("log", "a") as file:
-            returns = self.proctor.query_testers()
-
-#            for host in self.hosts: 
-#                host.set_status(HostStatus.BAD)
-
-        for violation, host in zip(returns, self.hosts):
-            if violation.find("True") != -1:
-                host.set_status(HostStatus.BAD)
-            else:
-                host.set_status(HostStatus.OK)
-
-#            map(lambda violation, host: host.set_status(HostStatus.BAD) if violation == "True" else host.status(HostStatus.OK), 
-#                    returns, self.hosts)
-#            file.write(str([host.get_status() for host in self.hosts])+"\n")
-
-        return
+        returns = self.proctor.query_testers()
+        
+        if (len(returns)):
+            for violation, host in zip(returns, self.hosts):
+                if violation.find("Offline") != -1:
+                    host.set_status(HostStatus.OFFLINE)
+                elif violation.find("True") != -1:
+                    host.set_status(HostStatus.BAD)
+                else:
+                    host.set_status(HostStatus.OK)
     
 def main(classroom_xml, stdscr):
     curses.curs_set(0)
     stdscr.clear()
 
     curses.start_color();
-    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_GREEN);
-    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_RED);
-    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_BLACK);
-    curses.init_pair(4, curses.COLOR_RED, curses.COLOR_BLACK);
+    curses.init_pair(OK_BOX, curses.COLOR_GREEN, curses.COLOR_GREEN);
+    curses.init_pair(BAD_BOX, curses.COLOR_RED, curses.COLOR_RED);
+    curses.init_pair(DEAD_BOX, 240, 240);
+    curses.init_pair(OK_TEXT, curses.COLOR_GREEN, curses.COLOR_BLACK);
+    curses.init_pair(BAD_TEXT, curses.COLOR_RED, curses.COLOR_BLACK);
+    curses.init_pair(DEAD_TEXT, 240, curses.COLOR_BLACK);
 
     classroom = Classroom(classroom_xml, stdscr)
     classroom.determine_dim()

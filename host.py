@@ -2,7 +2,8 @@ from enum import Enum
 
 class HostStatus(Enum): 
     OK = 0,     # no browser detected
-    BAD = 1     # browser detected
+    BAD = 1,    # browser detected
+    OFFLINE = 2 # socket connection failed
 
 class Host: 
     def __init__(self, continent, island, district, address, hostname, port):
