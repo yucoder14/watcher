@@ -1,0 +1,9 @@
+<classroom id='local'> 
+    <continent id='0'>
+        <island id='0'>
+            <district id='0'> 
+                <address id='0' hostname='localhost' port='48999'></address>
+            </district> 
+        </island>
+	</continent>
+</classroom> 
